@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+unless STDIN.tty?
+  input = STDIN.read
+  # puts "read: #{STDIN.read}"
+  puts input.upcase + '...'
+end

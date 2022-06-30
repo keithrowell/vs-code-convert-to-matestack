@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+require 'nokogiri'
+require 'pry'
+require 'rufo'
+
+unless STDIN.tty?
+  data = STDIN.read
+
+  SPECIAL_ATTRIBUTES = {
+    "href": "path"
+  }
+
+  MATE_ELEMENT_NAMES = {
+    "p" => "paragraph",
+    "a" => "link"
+  }
+
+  def identify_elements(element)
+    if (element.elements.any?)
+      children = element.elements.map { |e| identify_elements(e) }
+      identify_element(element, children)
+    else
+      identify_element(element, [])
+    end
+  end
+
+  def identify_element(element, matestack_children = [])
+    element_name = MATE_ELEMENT_NAMES[element.name] || element.name
+    if matestack_children.any?
+      <<~SQL.chomp
+      #{element_name} #{identify_attributes(element)} do
+      #{matestack_children.join("\n")}
+      end
+      SQL
+    else
+      <<~SQL.chomp
+      #{element_name} #{identify_attributes(element, true)}
+      SQL
+    end
+  end
+
+  def identify_attributes(element, no_children = false)
+    matt_attributes = element.attributes.to_a.map do |attribute|
+      name = SPECIAL_ATTRIBUTES[attribute[1].name] || attribute[1].name
+      if name.include? '-'
+        "'#{name}':\"#{attribute[1].value}\""
+      else
+        "#{name}:\"#{attribute[1].value}\""
+      end
+    end
+
+    matt_attributes << "text:\"#{element.text.strip}\"" if element.children.first&.text.to_s.strip != ""
+    matt_attributes.join(",\s")
+  end
+
+  @doc = Nokogiri::XML(data)
+  result = identify_elements(@doc.elements.first)
+  puts Rufo::Formatter.format(result)
+
+end
