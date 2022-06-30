@@ -2,10 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 
-// import * as fs from "fs"; 
-// import * as path from 'path';
 const path = require('path');
-const fs = require('fs'); 
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -33,26 +30,14 @@ function activate(context) {
 			const selection = editor.selection;
 			const selected_text = editor.document.getText(editor.selection);
 			
-			// let path = vscode.extensions.getExtension('htmltomatestack.convertToMatestack').extensionUri.path
-			// let file = '/Users/keith/sunstone/projects/vscode/extensions/htmltomatestack/convert.rb';
-			// let file = '/Users/keith/sunstone/projects/vscode/extensions/htmltomatestack/test.rb';
-			// let file = '~/test';
-
 			const convertScript = context.asAbsolutePath(
 				path.join('convert')
 			);
 			console.log(convertScript);
 
-			let file = './test_script';
-			let args = ['one', 'two'];
-			const str = "some string";
-			// let file = '/bin/ls';
-			// let fileContent = fs.readFileSync(file, 'utf8');
-			console.log(file);
-
-			// var stream = require('stream');
+	
+	
 			const cp = require('child_process')
-			// var buffer = new Buffer.from(selection + "\n");
 			let output = cp.execSync(convertScript, {encoding: "utf8", stdio: ['pipe', 'pipe', 'ignore'], input: selected_text}).toString();
 			console.log('output: ' + output.trim());
 			editor.edit(editBuilder => {
